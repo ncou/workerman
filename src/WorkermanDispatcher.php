@@ -8,9 +8,12 @@ use Chiron\ErrorHandler\ErrorHandler;
 use Chiron\Dispatcher\AbstractDispatcher;
 use Chiron\Http\Http;
 use Psr\Http\Message\ServerRequestInterface;
-use React\EventLoop\Factory;
-use React\Http\Server;
+use Workerman\Worker;
+use Workerman\Connection\TcpConnection as WorkermanTcpConnection;
+use Workerman\Protocols\Http\Request as WorkermanRequest;
 use Throwable;
+
+//https://github.com/chubbyphp/chubbyphp-workerman-request-handler/
 
 final class WorkermanDispatcher extends AbstractDispatcher
 {
@@ -18,29 +21,68 @@ final class WorkermanDispatcher extends AbstractDispatcher
     private $http;
     /** @var ErrorHandler */
     private $errorHandler;
+    /** @var WorkermanPsrRequestFactory */
+    private $requestFactory;
 
     // TODO : virer le paramétre Environment et utiliser directement la fonction globale getenv()
     public function canDispatch(): bool
     {
         //return true;
-        //return php_sapi_name() === 'cli' && $this->env->get('REACT_PHP') !== null;
-        return PHP_SAPI === 'cli' && env('REACT_PHP') !== null;
+        //return php_sapi_name() === 'cli' && $this->env->get('WORKER_MAN') !== null;
+        return PHP_SAPI === 'cli' && env('WORKER_MAN') !== null;
     }
 
-    protected function perform(Http $http, ErrorHandler $errorHandler): void
+    protected function perform(Http $http, ErrorHandler $errorHandler, WorkermanPsrRequestFactory $requestFactory): void
     {
         $this->http = $http;
         $this->errorHandler = $errorHandler;
+        $this->requestFactory = $requestFactory;
         $this->createServer();
     }
 
-    // TODO utiliser l'événement ->on('request', $callable) plutot que de passer le callable en paramétre du serveur !!! exemple ci dessous !!!!
-    //https://stackoverflow.com/questions/24310817/using-reactphp-for-sockets-in-php-port-stops-listening
-    // TODO : gérer les erreurs !!!!! => https://github.com/apisearch-io/symfony-react-server/blob/master/src/Application.php#L234
-    // TODO : autre exemple : https://github.com/driftphp/server/blob/c5b2b530e446c52804f074138aa16ba9a252fc89/src/Application.php#L178
-    // TODO : exemple avec un affichage de texte dans la console :      https://github.com/NigelGreenway/reactive-slim/blob/master/src/Server.php#L156
     private function createServer()
     {
+        $server = new Worker('http://0.0.0.0:8080');
+
+        $server->count = 4;
+
+/*
+        $server->onWorkerStart = function () {
+            echo 'Workerman http server is started.'.PHP_EOL;
+        };
+*/
+
+        $server->onMessage = function (WorkermanTcpConnection $connection, WorkermanRequest $workermanRequest) {
+
+
+            $verbose = true;
+
+            $request = $this->requestFactory->toPsrRequest($workermanRequest);
+
+            try {
+                $response = $this->http->run($request);
+            } catch (Throwable $e) {
+                // TODO : il faudrait plutot utiliser le RegisterErrorHandler::renderException($e) pour générer le body de la réponse !!!!
+                $response = $this->errorHandler->renderException($e, $request, $verbose);
+            }
+
+            $emitter = new WorkermanEmitter($connection);
+            $emitter->emit($response);
+        };
+
+        Worker::runAll();
+
+
+
+
+
+
+
+
+
+/*
+
+
         $loop = Factory::create();
 
         $server = new Server($loop, function (ServerRequestInterface $request) {
@@ -62,23 +104,9 @@ final class WorkermanDispatcher extends AbstractDispatcher
 
         echo 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
 
-        //https://github.com/apisearch-io/symfony-react-server/blob/master/src/Application.php#L234
-        /*
-        $http->on('error', function (\Throwable $e) {
-            (new ConsoleException($e, '/', 'EXC', 0))->print();
-        });*/
-
         $loop->run();
+
+*/
+
     }
-
-    //https://github.com/hunzhiwange/framework/blob/master/src/Leevel/Http/Request.php#L151
-    /*
-    public function isConsole(): bool
-    {
-        if ($this->server->get('SERVER_SOFTWARE') === 'swoole-http-server') {
-            return false;
-        }
-
-        return $this->isRealCli();
-    }*/
 }

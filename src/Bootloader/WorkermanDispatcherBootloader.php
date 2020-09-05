@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Chiron\React\Bootloader;
+namespace Chiron\Workerman\Bootloader;
 
 use Chiron\Application;
 use Chiron\Bootload\AbstractBootloader;
 use Chiron\Container\FactoryInterface;
-use Chiron\React\ReactDispatcher;
+use Chiron\Workerman\WorkermanDispatcher;
 
-final class ReactDispatcherBootloader extends AbstractBootloader
+final class WorkermanDispatcherBootloader extends AbstractBootloader
 {
     public function boot(Application $application, FactoryInterface $factory): void
     {
-        $application->addDispatcher($factory->build(ReactDispatcher::class));
+        $application->addDispatcher($factory->build(WorkermanDispatcher::class));
     }
 }
