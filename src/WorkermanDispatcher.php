@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Chiron\Workerman;
 
 use Chiron\ErrorHandler\ErrorHandler;
-use Chiron\Dispatcher\AbstractDispatcher;
+use Chiron\Core\Dispatcher\AbstractDispatcher;
 use Chiron\Http\Http;
 use Psr\Http\Message\ServerRequestInterface;
 use Workerman\Worker;
