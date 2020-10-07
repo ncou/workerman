@@ -60,7 +60,7 @@ final class WorkermanDispatcher extends AbstractDispatcher
             $request = $this->requestFactory->toPsrRequest($workermanRequest);
 
             try {
-                $response = $this->http->run($request);
+                $response = $this->http->handle($request);
             } catch (Throwable $e) {
                 // TODO : il faudrait plutot utiliser le RegisterErrorHandler::renderException($e) pour générer le body de la réponse !!!!
                 $response = $this->errorHandler->renderException($e, $request, $verbose);
