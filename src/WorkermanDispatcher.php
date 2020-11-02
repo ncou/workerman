@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Chiron\Workerman;
 
-use Chiron\ErrorHandler\ErrorHandler;
+use Chiron\ErrorHandler\HttpErrorHandler;
 use Chiron\Core\Dispatcher\AbstractDispatcher;
 use Chiron\Http\Http;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,7 +19,7 @@ final class WorkermanDispatcher extends AbstractDispatcher
 {
     /** @var Http */
     private $http;
-    /** @var ErrorHandler */
+    /** @var HttpErrorHandler */
     private $errorHandler;
     /** @var WorkermanPsrRequestFactory */
     private $requestFactory;
@@ -32,7 +32,7 @@ final class WorkermanDispatcher extends AbstractDispatcher
         return PHP_SAPI === 'cli' && env('WORKER_MAN') !== null;
     }
 
-    protected function perform(Http $http, ErrorHandler $errorHandler, WorkermanPsrRequestFactory $requestFactory): void
+    protected function perform(Http $http, HttpErrorHandler $errorHandler, WorkermanPsrRequestFactory $requestFactory): void
     {
         $this->http = $http;
         $this->errorHandler = $errorHandler;
