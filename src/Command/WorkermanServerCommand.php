@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Chiron\Workerman\Command;
 
-use Chiron\Boot\Directories;
-use Chiron\Boot\Environment;
+use Chiron\Core\Directories;
+use Chiron\Core\Environment;
 use Chiron\Console\AbstractCommand;
 use Chiron\Filesystem\Filesystem;
 
