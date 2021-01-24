@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Chiron\Workerman;
 
-use Chiron\ErrorHandler\HttpErrorHandler;
+use Chiron\Http\ErrorHandler\HttpErrorHandler;
 use Chiron\Core\Dispatcher\AbstractDispatcher;
 use Chiron\Http\Http;
 use Psr\Http\Message\ServerRequestInterface;
@@ -44,7 +44,7 @@ final class WorkermanDispatcher extends AbstractDispatcher
     {
         $server = new Worker('http://0.0.0.0:8080');
 
-        $server->count = 4;
+        $server->count = 4; // $server->count = shell_exec('nproc') ? shell_exec('nproc') : 32;
 
 /*
         $server->onWorkerStart = function () {
