@@ -6,12 +6,12 @@ namespace Chiron\Workerman\Bootloader;
 
 use Chiron\Core\Container\Bootloader\AbstractBootloader;
 use Chiron\Console\Console;
-use Chiron\Workerman\Command\WorkermanServerCommand;
+use Chiron\Workerman\Command\WorkermanServeCommand;
 
 final class WorkermanCommandBootloader extends AbstractBootloader
 {
     public function boot(Console $console): void
     {
-        $console->addCommand(WorkermanServerCommand::getDefaultName(), WorkermanServerCommand::class);
+        $console->addCommand(WorkermanServeCommand::getDefaultName(), WorkermanServeCommand::class);
     }
 }

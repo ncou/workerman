@@ -17,96 +17,27 @@ use Throwable;
 
 final class WorkermanDispatcher extends AbstractDispatcher
 {
-    /** @var Http */
-    private $http;
-    /** @var HttpErrorHandler */
-    private $errorHandler;
-    /** @var WorkermanPsrRequestFactory */
-    private $requestFactory;
-
-    // TODO : virer le paramétre Environment et utiliser directement la fonction globale getenv()
     public function canDispatch(): bool
     {
-        //return true;
-        //return php_sapi_name() === 'cli' && $this->env->get('WORKER_MAN') !== null;
         return PHP_SAPI === 'cli' && env('WORKER_MAN') !== null;
     }
 
-    protected function perform(Http $http, HttpErrorHandler $errorHandler, WorkermanPsrRequestFactory $requestFactory): void
+    // TODO : créer une classe HttpHandler qui se serait un HandlerInterface, c'est à dire que ca ferait le code qui est dans la closure onRequest(), donc on pourrait utiliser ce bout de code dans les reactphpDispatcher, RoadRunnerDispatcher et ici. ca permettrait directement de passe à la méthode onRequest([$httpHandler, 'handle']), et donc la gestion du http->handle plus le try/catch et la gestion des exception serait faire dans cette classe HttpHandler::class !!!!!
+    protected function perform(Http $http, HttpErrorHandler $errorHandler, WorkermanListener $workerman): void
     {
-        $this->http = $http;
-        $this->errorHandler = $errorHandler;
-        $this->requestFactory = $requestFactory;
-        $this->createServer();
-    }
-
-    private function createServer()
-    {
-        $server = new Worker('http://0.0.0.0:8080');
-
-        $server->count = 4; // $server->count = shell_exec('nproc') ? shell_exec('nproc') : 32;
-
-/*
-        $server->onWorkerStart = function () {
-            echo 'Workerman http server is started.'.PHP_EOL;
-        };
-*/
-
-        $server->onMessage = function (WorkermanTcpConnection $connection, WorkermanRequest $workermanRequest) {
-
-
+        // Callback used when a new request event is received.
+        $workerman->onRequest(function (ServerRequestInterface $request) use ($http, $errorHandler) {
             $verbose = true;
-
-            $request = $this->requestFactory->toPsrRequest($workermanRequest);
-
             try {
-                $response = $this->http->handle($request);
+                $response = $http->handle($request);
             } catch (Throwable $e) {
                 // TODO : il faudrait plutot utiliser le RegisterErrorHandler::renderException($e) pour générer le body de la réponse !!!!
-                $response = $this->errorHandler->renderException($e, $request, $verbose);
-            }
-
-            $emitter = new WorkermanEmitter($connection);
-            $emitter->emit($response);
-        };
-
-        Worker::runAll();
-
-
-
-
-
-
-
-
-
-/*
-
-
-        $loop = Factory::create();
-
-        $server = new Server($loop, function (ServerRequestInterface $request) {
-            $verbose = true;
-
-            try {
-                $response = $this->http->run($request);
-            } catch (Throwable $e) {
-                // TODO : il faudrait plutot utiliser le RegisterErrorHandler::renderException($e) pour générer le body de la réponse !!!!
-                $response = $this->errorHandler->renderException($e, $request, $verbose);
+                $response = $errorHandler->renderException($e, $request, $verbose);
             }
 
             return $response;
         });
-
-        //$socket = new \React\Socket\Server(isset($argv[1]) ? $argv[1] : '0.0.0.0:0', $loop);
-        $socket = new \React\Socket\Server('127.0.0.1:8080', $loop);
-        $server->listen($socket);
-
-        echo 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
-
-        $loop->run();
-
-*/
-
+        // Listen (loop) for a request event.
+        $workerman->listen();
     }
 }
