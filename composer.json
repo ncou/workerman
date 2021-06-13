@@ -36,7 +36,7 @@
     "extra": {
         "chiron": {
             "bootloaders": [
-                "Chiron\\Workerman\\Bootloader\\WorkermanDispatcherBootloader",
+                "Chiron\\Workerman\\Bootloader\\WorkermanEngineBootloader",
                 "Chiron\\Workerman\\Bootloader\\WorkermanCommandBootloader"
             ]
         }

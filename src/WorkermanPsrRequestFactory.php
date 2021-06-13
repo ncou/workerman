@@ -11,6 +11,9 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Workerman\Protocols\Http\Request as WorkermanRequest;
 
+// TODO : exemple avec du PSR7 : https://github.com/walkor/Workerman/issues/51#issuecomment-684685099
+// TODO : au lieu de faire un new WorkermanResponse() il est possible de convertir la réponse en string lors de l'appel à ->send() via le code : https://github.com/walkor/psr7/blob/master/src/functions.php#L42
+
 final class WorkermanPsrRequestFactory
 {
     /**
@@ -38,6 +41,7 @@ final class WorkermanPsrRequestFactory
         $this->uploadedFileFactory = $uploadedFileFactory;
     }
 
+    // TODO : exemple :  https://github.com/gotzmann/comet/blob/acf7c66e41232f0ec6f73fc35db5c647c167167d/src/Comet.php#L180
     public function toPsrRequest(WorkermanRequest $workermanRequest): ServerRequestInterface
     {
         $request = $this->serverRequestFactory->createServerRequest(
@@ -47,8 +51,13 @@ final class WorkermanPsrRequestFactory
 
         foreach ($workermanRequest->header() as $name => $value) {
             $request = $request->withHeader($name, $value);
+            // Update the host
+            if ($name === 'host') {
+                $request = $request->withUri($request->getUri()->withHost($value)); // TODO : il faudrait surement faire un split du host dans le cas ou il y a le port qui est accolé au host et appeller la méthode ->withPort() !!!!
+            }
         }
 
+        $request = $request->withProtocolVersion($workermanRequest->protocolVersion());
         $request = $request->withCookieParams($workermanRequest->cookie());
         $request = $request->withQueryParams($workermanRequest->get());
         $request = $request->withParsedBody($workermanRequest->post());
@@ -97,5 +106,4 @@ final class WorkermanPsrRequestFactory
             $file['type']
         );
     }
-
 }
