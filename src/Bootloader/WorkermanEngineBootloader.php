@@ -6,7 +6,7 @@ namespace Chiron\Workerman\Bootloader;
 
 use Chiron\Application;
 use Chiron\Core\Container\Bootloader\AbstractBootloader;
-use Chiron\Container\FactoryInterface;
+use Chiron\Injector\FactoryInterface;
 use Chiron\Workerman\WorkermanEngine;
 
 final class WorkermanEngineBootloader extends AbstractBootloader
