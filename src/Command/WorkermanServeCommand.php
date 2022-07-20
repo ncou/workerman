@@ -7,7 +7,6 @@ namespace Chiron\Workerman\Command;
 use Chiron\Core\Directories;
 use Chiron\Core\Environment;
 use Chiron\Core\Command\AbstractCommand;
-use Chiron\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\Process;
@@ -23,11 +22,6 @@ use Chiron\WebServer\Exception\WebServerException;
  */
 final class WorkermanServeCommand extends AbstractCommand
 {
-    /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
     protected static $defaultName = 'workerman:serve';
 
     protected function configure(): void
